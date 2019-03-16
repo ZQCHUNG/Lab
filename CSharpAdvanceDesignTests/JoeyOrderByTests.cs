@@ -8,47 +8,27 @@ using System.Linq;
 
 namespace CSharpAdvanceDesignTests
 {
-    public class CombineKeyComparer
+    public class CombineKeyComparer : IComparer<Employee>
     {
-        public CombineKeyComparer(Func<Employee, string> firstKeySelector, Comparer<string> firstkeyComparer)
+        public CombineKeyComparer(Func<Employee, string> KeySelector, Comparer<string> KeyComparer)
         {
-            FirstKeySelector = firstKeySelector;
-            FirstkeyComparer = firstkeyComparer;
+            this.KeySelector = KeySelector;
+            this.KeyComparer = KeyComparer;
         }
 
-        public Func<Employee, string> FirstKeySelector { get; private set; }
-        public Comparer<string> FirstkeyComparer { get; private set; }
+        private Func<Employee, string> KeySelector { get;  set; }
+        private Comparer<string> KeyComparer { get;  set; }
+
+        public int Compare(Employee element, Employee minElement)
+        {
+            return KeyComparer.Compare(KeySelector(element), KeySelector(minElement));
+        }
     }
 
     [TestFixture]
     //[Ignore("not yet")]
     public class JoeyOrderByTests
     {
-        //[Ignore("q")]
-        //[Test]
-        //public void orderBy_lastName()
-        //{
-        //    var employees = new[]
-        //    {
-        //        new Employee {FirstName = "Joey", LastName = "Wang"},
-        //        new Employee {FirstName = "Tom", LastName = "Li"},
-        //        new Employee {FirstName = "Joseph", LastName = "Chen"},
-        //        new Employee {FirstName = "Joey", LastName = "Chen"},
-        //    };
-
-        //    var actual = JoeyOrderByLastName(employees, employee => employee.LastName, employee1 => employee1.FirstName);
-
-        //    var expected = new[]
-        //    {
-        //        new Employee {FirstName = "Joseph", LastName = "Chen"},
-        //        new Employee {FirstName = "Joey", LastName = "Chen"},
-        //        new Employee {FirstName = "Tom", LastName = "Li"},
-        //        new Employee {FirstName = "Joey", LastName = "Wang"},
-        //    };
-
-        //    expected.ToExpectedObject().ShouldMatch(actual);
-        //}
-
         [Test]
         public void orderBy_lastName_and_firstName()
         {
@@ -59,8 +39,7 @@ namespace CSharpAdvanceDesignTests
                 new Employee {FirstName = "Joseph", LastName = "Chen"},
                 new Employee {FirstName = "Joey", LastName = "Chen"},
             };
-
-
+            
             var firstkeyComparer = new CombineKeyComparer(element => element.LastName, Comparer<string>.Default);
             var secondkeyComparer = new CombineKeyComparer(element => element.FirstName, Comparer<string>.Default);
 
@@ -79,7 +58,9 @@ namespace CSharpAdvanceDesignTests
             expected.ToExpectedObject().ShouldMatch(actual);
         }
 
-        private IEnumerable<Employee> JoeyOrderByLastNameAndFirstName(IEnumerable<Employee> employees, CombineKeyComparer FirstCombineKeyComparer,  CombineKeyComparer SecondCombineKeyComparer)
+        private IEnumerable<Employee> JoeyOrderByLastNameAndFirstName(IEnumerable<Employee> employees,
+                IComparer<Employee> FirstCombineKeyComparer,
+                IComparer<Employee> SecondCombineKeyComparer)
         {
             //bubble sort
             var elements = employees.ToList();
@@ -91,7 +72,7 @@ namespace CSharpAdvanceDesignTests
                 {
                     var element = elements[i];
 
-                    var firstCompareResult = FirstCombineKeyComparer.FirstkeyComparer.Compare(FirstCombineKeyComparer.FirstKeySelector(element), FirstCombineKeyComparer.FirstKeySelector(minElement));
+                    var firstCompareResult = FirstCombineKeyComparer.Compare(element, minElement);
                     if (firstCompareResult < 0)
                     {
                         minElement = element;
@@ -99,7 +80,8 @@ namespace CSharpAdvanceDesignTests
                     }
                     else if (firstCompareResult == 0)
                     {
-                        if (SecondCombineKeyComparer.FirstkeyComparer.Compare(SecondCombineKeyComparer.FirstKeySelector(element), SecondCombineKeyComparer.FirstKeySelector(minElement)) < 0)
+                        var secondCompareResult = SecondCombineKeyComparer.Compare(element,minElement);
+                        if (secondCompareResult < 0)
                         {
                             minElement = element;
                             index = i;
