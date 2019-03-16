@@ -2,11 +2,12 @@
 using Lab.Entities;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CSharpAdvanceDesignTests
 {
     [TestFixture]
-    [Ignore("not yet")]
+    // [Ignore("not yet")]
     public class JoeyReverseTests
     {
         [Test]
@@ -31,9 +32,23 @@ namespace CSharpAdvanceDesignTests
             expected.ToExpectedObject().ShouldMatch(actual);
         }
 
-        private IEnumerable<Employee> JoeyReverse(IEnumerable<Employee> employees)
+        private IEnumerable<TSource> JoeyReverse<TSource>(IEnumerable<TSource> Sources)
         {
-            throw new System.NotImplementedException();
+            return new Stack<TSource>(Sources);
+
+            //var employes = Sources.GetEnumerator();
+
+            //Stack<TSource> esStack = new Stack<TSource>();
+
+            //while (employes.MoveNext())
+            //{
+            //    esStack.Push(employes.Current);
+            //}
+
+            //while (esStack.Any())
+            //{
+            //    yield return esStack.Pop();
+            //}
         }
     }
 }
