@@ -8,34 +8,46 @@ using System.Linq;
 
 namespace CSharpAdvanceDesignTests
 {
+    public class CombineKeyComparer
+    {
+        public CombineKeyComparer(Func<Employee, string> firstKeySelector, Comparer<string> firstkeyComparer)
+        {
+            FirstKeySelector = firstKeySelector;
+            FirstkeyComparer = firstkeyComparer;
+        }
+
+        public Func<Employee, string> FirstKeySelector { get; private set; }
+        public Comparer<string> FirstkeyComparer { get; private set; }
+    }
+
     [TestFixture]
     //[Ignore("not yet")]
     public class JoeyOrderByTests
     {
-        [Ignore("q")]
-        [Test]
-        public void orderBy_lastName()
-        {
-            var employees = new[]
-            {
-                new Employee {FirstName = "Joey", LastName = "Wang"},
-                new Employee {FirstName = "Tom", LastName = "Li"},
-                new Employee {FirstName = "Joseph", LastName = "Chen"},
-                new Employee {FirstName = "Joey", LastName = "Chen"},
-            };
+        //[Ignore("q")]
+        //[Test]
+        //public void orderBy_lastName()
+        //{
+        //    var employees = new[]
+        //    {
+        //        new Employee {FirstName = "Joey", LastName = "Wang"},
+        //        new Employee {FirstName = "Tom", LastName = "Li"},
+        //        new Employee {FirstName = "Joseph", LastName = "Chen"},
+        //        new Employee {FirstName = "Joey", LastName = "Chen"},
+        //    };
 
-            var actual = JoeyOrderByLastName(employees);
+        //    var actual = JoeyOrderByLastName(employees, employee => employee.LastName, employee1 => employee1.FirstName);
 
-            var expected = new[]
-            {
-                new Employee {FirstName = "Joseph", LastName = "Chen"},
-                new Employee {FirstName = "Joey", LastName = "Chen"},
-                new Employee {FirstName = "Tom", LastName = "Li"},
-                new Employee {FirstName = "Joey", LastName = "Wang"},
-            };
+        //    var expected = new[]
+        //    {
+        //        new Employee {FirstName = "Joseph", LastName = "Chen"},
+        //        new Employee {FirstName = "Joey", LastName = "Chen"},
+        //        new Employee {FirstName = "Tom", LastName = "Li"},
+        //        new Employee {FirstName = "Joey", LastName = "Wang"},
+        //    };
 
-            expected.ToExpectedObject().ShouldMatch(actual);
-        }
+        //    expected.ToExpectedObject().ShouldMatch(actual);
+        //}
 
         [Test]
         public void orderBy_lastName_and_firstName()
@@ -48,7 +60,13 @@ namespace CSharpAdvanceDesignTests
                 new Employee {FirstName = "Joey", LastName = "Chen"},
             };
 
-            var actual = JoeyOrderByLastName(employees);
+
+            var firstkeyComparer = new CombineKeyComparer(element => element.LastName, Comparer<string>.Default);
+            var secondkeyComparer = new CombineKeyComparer(element => element.FirstName, Comparer<string>.Default);
+
+            var actual = JoeyOrderByLastNameAndFirstName(employees,
+                firstkeyComparer,
+                secondkeyComparer);
 
             var expected = new[]
             {
@@ -61,10 +79,9 @@ namespace CSharpAdvanceDesignTests
             expected.ToExpectedObject().ShouldMatch(actual);
         }
 
-        private IEnumerable<Employee> JoeyOrderByLastName(IEnumerable<Employee> employees)
+        private IEnumerable<Employee> JoeyOrderByLastNameAndFirstName(IEnumerable<Employee> employees, CombineKeyComparer FirstCombineKeyComparer,  CombineKeyComparer SecondCombineKeyComparer)
         {
             //bubble sort
-            var stringComparer = StringComparer.Create(CultureInfo.CurrentCulture, true);
             var elements = employees.ToList();
             while (elements.Any())
             {
@@ -72,17 +89,19 @@ namespace CSharpAdvanceDesignTests
                 var index = 0;
                 for (int i = 1; i < elements.Count; i++)
                 {
-                    if (stringComparer.Compare(elements[i].LastName, minElement.LastName) < 0)
+                    var element = elements[i];
+
+                    var firstCompareResult = FirstCombineKeyComparer.FirstkeyComparer.Compare(FirstCombineKeyComparer.FirstKeySelector(element), FirstCombineKeyComparer.FirstKeySelector(minElement));
+                    if (firstCompareResult < 0)
                     {
-                        minElement = elements[i];
+                        minElement = element;
                         index = i;
                     }
-
-                    if (stringComparer.Compare(elements[i].LastName, minElement.LastName) == 0)
+                    else if (firstCompareResult == 0)
                     {
-                        if (stringComparer.Compare(elements[i].FirstName, minElement.FirstName) < 0)
+                        if (SecondCombineKeyComparer.FirstkeyComparer.Compare(SecondCombineKeyComparer.FirstKeySelector(element), SecondCombineKeyComparer.FirstKeySelector(minElement)) < 0)
                         {
-                            minElement = elements[i];
+                            minElement = element;
                             index = i;
                         }
                     }
