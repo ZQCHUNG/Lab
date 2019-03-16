@@ -6,7 +6,7 @@ using Lab.Entities;
 namespace CSharpAdvanceDesignTests
 {
     [TestFixture]
-    //[Ignore("not yet")]
+    [Ignore("not yet")]
     public class JoeySequenceEqualTests
     {
         [Test]
