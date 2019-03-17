@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace CSharpAdvanceDesignTests
 {
     [TestFixture()]
-    [Ignore("not yet")]
+    //[Ignore("not yet")]
     public class JoeyCastTests
     {
         [Test]
@@ -15,14 +15,34 @@ namespace CSharpAdvanceDesignTests
         {
             var arrayList = new ArrayList { 1, "2", 3 };
 
-            void TestDelegate() => JoeyCast<int>(arrayList);
+            void TestDelegate() => JoeyCast<int>(arrayList.ToString());
 
-            Assert.Throws<InvalidCastException>(TestDelegate);
+            Assert.Throws<JoeyCastException>(TestDelegate);
         }
 
         private IEnumerable<T> JoeyCast<T>(IEnumerable source)
         {
-            throw new System.NotImplementedException();
+            var sourceEnumerator = source.GetEnumerator();
+
+            while (sourceEnumerator.MoveNext())
+            {
+                var current = sourceEnumerator.Current;
+
+                if (current is T item)
+                {
+                    yield return item;
+                }
+                else
+                {
+                    throw new JoeyCastException();
+                }
+            }
+
         }
+    }
+
+    internal class JoeyCastException : Exception
+    {
+
     }
 }

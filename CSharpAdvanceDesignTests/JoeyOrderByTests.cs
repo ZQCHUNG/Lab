@@ -68,9 +68,9 @@ namespace CSharpAdvanceDesignTests
             };
 
             var actual = employees
-                .JoeyOrderByKeepComparer(e => e.LastName, Comparer<string>.Default)
-                .JoeyThenBy(e => e.FirstName, Comparer<string>.Default)
-                .JoeyThenBy(e => e.Age, Comparer<int>.Default);
+                .JoeyOrderByKeepComparer(e => e.LastName)
+                .JoeyThenBy(e => e.FirstName)
+                .JoeyThenBy(e => e.Age);
 
             foreach (var item in actual)
             {
