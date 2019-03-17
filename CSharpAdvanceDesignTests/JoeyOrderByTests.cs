@@ -5,6 +5,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Lab;
 
 namespace CSharpAdvanceDesignTests
 {
@@ -25,7 +26,7 @@ namespace CSharpAdvanceDesignTests
         }
     }
 
-    public class ComboComparer : IComparer<Employee>
+    public class ComboComparer <TSource> : IComparer<Employee>
     {
         public ComboComparer(IComparer<Employee> FirstCombineKeyComparer, IComparer<Employee> SecondCombineKeyComparer)
         {
@@ -33,8 +34,8 @@ namespace CSharpAdvanceDesignTests
             this.SecondCombineKeyComparer = SecondCombineKeyComparer;
         }
 
-        public IComparer<Employee> FirstCombineKeyComparer { get; private set; }
-        public IComparer<Employee> SecondCombineKeyComparer { get; private set; }
+        private IComparer<Employee> FirstCombineKeyComparer { get; set; }
+        private IComparer<Employee> SecondCombineKeyComparer { get; set; }
 
         public int Compare(Employee x, Employee y)
         {
@@ -53,6 +54,7 @@ namespace CSharpAdvanceDesignTests
     //[Ignore("not yet")]
     public class JoeyOrderByTests
     {
+
         [Test]
         public void lastName_firstName_Age()
         {
@@ -65,16 +67,15 @@ namespace CSharpAdvanceDesignTests
                 new Employee {FirstName = "Joey", LastName = "Wang", Age = 20},
             };
 
-            var firstComparer = new CombineKeyComparer<string>(element => element.LastName, Comparer<string>.Default);
-            var secondComparer = new CombineKeyComparer<string>(element => element.FirstName, Comparer<string>.Default);
+            var actual = employees
+                .JoeyOrderByKeepComparer(e => e.LastName, Comparer<string>.Default)
+                .JoeyThenBy(e => e.FirstName, Comparer<string>.Default)
+                .JoeyThenBy(e => e.Age, Comparer<int>.Default);
 
-            var firstCombo = new ComboComparer(firstComparer, secondComparer);
-
-            var thirdComparer = new CombineKeyComparer<int>(element => element.Age, Comparer<int>.Default);
-
-            var finalCombo = new ComboComparer(firstCombo, thirdComparer);
-
-            var actual = JoeyOrderBy(employees, finalCombo);
+            foreach (var item in actual)
+            {
+                Console.WriteLine(item.Age);
+            }
 
             var expected = new[]
             {
@@ -116,8 +117,9 @@ namespace CSharpAdvanceDesignTests
             expected.ToExpectedObject().ShouldMatch(actual);
         }
 
-        private IEnumerable<Employee> JoeyOrderBy(IEnumerable<Employee> employees, 
-                    IComparer<Employee> comboComparer)
+        private IEnumerable<Employee> JoeyOrderBy(
+            IEnumerable<Employee> employees,
+            IComparer<Employee> comparer)
         {
             //bubble sort
             var elements = employees.ToList();
@@ -129,20 +131,10 @@ namespace CSharpAdvanceDesignTests
                 {
                     var element = elements[i];
 
-                    var firstCompareResult = comboComparer.Compare(element, minElement);
-                    if (firstCompareResult < 0)
+                    if (comparer.Compare(element, minElement) < 0)
                     {
                         minElement = element;
                         index = i;
-                    }
-                    else if (firstCompareResult == 0)
-                    {
-                        var secondCompareResult = comboComparer.Compare(element, minElement);
-                        if (secondCompareResult < 0)
-                        {
-                            minElement = element;
-                            index = i;
-                        }
                     }
                 }
 

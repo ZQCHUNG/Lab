@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Lab.Entities;
 
 namespace Lab
@@ -148,6 +149,18 @@ namespace Lab
             }
 
             return current;
+        }
+
+        public static IOrderedEnumerable<Employee> JoeyThenBy<TKey>(this IOrderedEnumerable<Employee> source,
+            Func<Employee, TKey> keySelector, IComparer<TKey> comparer)
+        {
+            return source.CreateOrderedEnumerable(keySelector, comparer, false);
+        }
+
+        public static IOrderedEnumerable<Employee> JoeyOrderByKeepComparer(this IEnumerable<Employee> employees,
+            Func<Employee, string> keySelector, Comparer<string> comparer)
+        {
+            return new MyOrderedEnumerable(employees, new CombineKeyComparer<string>(keySelector, comparer));
         }
     }
 }
