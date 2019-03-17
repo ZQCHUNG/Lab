@@ -3,6 +3,7 @@ using NUnit.Framework.Internal;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CSharpAdvanceDesignTests
 {
@@ -15,7 +16,7 @@ namespace CSharpAdvanceDesignTests
         {
             var arrayList = new ArrayList { 1, "2", 3 };
 
-            void TestDelegate() => JoeyCast<int>(arrayList.ToString());
+            void TestDelegate() => JoeyCast<int>(arrayList).ToList();
 
             Assert.Throws<JoeyCastException>(TestDelegate);
         }
